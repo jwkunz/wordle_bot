@@ -1,7 +1,7 @@
 # wordle_bot
-A bot for playing World and giving suggestions based on the maximum entropy method
+A bot for playing World and giving suggestions based on the maximum entropy method.
 
-I eventually with give it a GUI, but as of right now, the main_XXXX.cpp files can be compiled.
+I eventually will give it a GUI, but as of right now the main_XXXX.cpp files can be compiled for a terminal based expierence.
 
 - main_game_engine.cpp : A terminal Wordle implementation without suggestions (no cheating)
 - main_game_engine_recomendations.cpp : A terminal Wordle implementation with suggestions (cheating)
