@@ -8,6 +8,7 @@ I eventually will give it a GUI, but as of right now the main_XXXX.cpp files can
 - main_recomendation_engine.cpp : A terminal tool to give suggestions based on a external Wordle game (cheating)
 
 For example, to compile into the target directory:
-g++ -std=c++17 -o3 ${file} -o "${workspaceFolder}\\target\\${fileBasenameNoExtension}.exe" -fopenmp
+
+  g++ -std=c++17 -o3 ${file} -o "${workspaceFolder}\\target\\${fileBasenameNoExtension}.exe" -fopenmp
 
 
