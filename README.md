@@ -10,5 +10,8 @@ I eventually will give it a GUI, but as of right now the main_XXXX.cpp files can
 For example, to compile into the target directory with the g++ toolchain:
 
   g++ -std=c++17 -o3 ${file} -o ${workspaceFolder}\\target\\${fileBasenameNoExtension}.exe -fopenmp
+  
+The data directory contains .txt files with lists of words in ASCII and separated by a newline.  
+Data can be added here, adjusted in the main_XXXX.cpp file, and recompiled.
 
 
