@@ -1,17 +1,17 @@
 #pragma once
 #include <array>
 #include <iostream>
-#include <set>
+#include <vector>
 #include <string>
 
 #include "word.cpp"
 #include "filters.cpp"
 
 /*
-    word_bank : Object that hold a set of word_t
+    word_bank : Object that hold a vector of word_t
 */
 
-class word_bank : public std::set<word_t>
+class word_bank : public std::vector<word_t>
 {
 public:
     // Initialize from a txt file in ASCII format "word\n"
@@ -43,7 +43,7 @@ public:
             if ((counter == word_size) && (is_end))
             {
                 // Add to buffer
-                this->insert(buffer);
+                this->push_back(buffer);
                 counter = 0;
             }
             // Regular newline case
@@ -62,6 +62,8 @@ public:
                 counter++;
             }
         } while (c != EOF);
+
+        this->shrink_to_fit();
     }
 
     // Filter based on a position constraint
@@ -70,7 +72,12 @@ public:
     word_bank matches_position(
         const position_rule &constraint) const
     {
+        // Create result buffer
         word_bank result;
+        
+        // Preallocate
+        result.reserve(this->size());
+
         // For every word
         for (auto ii : *this)
         {
@@ -119,11 +126,12 @@ public:
             if (match)
             {
                 // Store in new word bank
-                result.insert(ii);
+                result.push_back(ii);
             }
         }
 
         // Return
+        result.shrink_to_fit();
         return result;
     }
 
@@ -133,7 +141,13 @@ public:
     word_bank matches_counts(
         count_rule &constraint) const
     {
+        // Create result buffer
         word_bank result;
+        
+        // Preallocate
+        result.reserve(this->size());
+
+        // For every word
         for (auto ii : *this)
         {
             // Get the counts of this word
@@ -201,9 +215,12 @@ public:
             // Add matching results
             if (match)
             {
-                result.insert(ii);
+                result.push_back(ii);
             }
         }
+        
+        // Return
+        result.shrink_to_fit();
         return result;
     }
 

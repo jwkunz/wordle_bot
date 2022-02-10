@@ -113,10 +113,12 @@ void recommendation_generator(
     count_rule c = make_count_rule(last_guess, feedback_given);
     // Apply filter
     word_bank temp = filtered_word_bank.matches(p, c);
-    // Get rid of the current guess
-    temp.erase(last_guess);
-    // Keep the filtered word bank
-    filtered_word_bank = temp;
+    // Keep the filtered word bank (deep copy)
+    filtered_word_bank.clear();
+    filtered_word_bank.reserve(temp.size());
+    for(auto ii : temp){
+        filtered_word_bank.push_back(ii);
+    }
 
     // Compute entropy and sort the result
     std::priority_queue<std::pair<double, word_t>> sorter;
