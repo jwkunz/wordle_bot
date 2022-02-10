@@ -52,6 +52,6 @@ int main()
     double H = compute_word_entropy(w, W, A);
     auto end = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-    std::cout << "Elapsed Time: " << elapsed << std::endl;
+    std::cout << "Elapsed Time: " << elapsed << " ms" << std::endl;
     std::cout << "Entropy of " << w << ": " << H << std::endl;
 }
