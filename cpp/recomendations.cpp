@@ -114,11 +114,8 @@ void recommendation_generator(
     // Apply filter
     word_bank temp = filtered_word_bank.matches(p, c);
     // Keep the filtered word bank (deep copy)
-    filtered_word_bank.clear();
-    filtered_word_bank.reserve(temp.size());
-    for(auto ii : temp){
-        filtered_word_bank.push_back(ii);
-    }
+    filtered_word_bank.resize(temp.size());
+    memcpy(filtered_word_bank.data(),temp.data(),sizeof(word_t)*temp.size());
 
     // Compute entropy and sort the result
     std::priority_queue<std::pair<double, word_t>> sorter;
