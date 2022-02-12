@@ -46,10 +46,10 @@ double compute_word_entropy(
     };
 
     // Multi-threaded version
-    //double total = std::reduce(std::execution::par_unseq,states.begin(),states.end(),0.0,accumulate_entropy);
+    double total = std::reduce(std::execution::par_unseq,states.begin(),states.end(),0.0,accumulate_entropy);
 
     // Single-threaded version
-    double total = std::accumulate(states.begin(),states.end(),0.0,accumulate_entropy);
+    //double total = std::accumulate(states.begin(),states.end(),0.0,accumulate_entropy);
 
 
     // Final answer
@@ -76,16 +76,23 @@ void recommendation_generator(
     count_rule c = make_count_rule(last_guess, feedback_given);
     // Apply filter
     word_bank temp = filtered_word_bank.matches(p, c);
-    // Keep the filtered word bank (deep copy)
-    filtered_word_bank.resize(temp.size());
-    memcpy(filtered_word_bank.data(), temp.data(), sizeof(word_t) * temp.size());
 
-    // Compute entropy and sort the result
+    // Deep copy the filtered temp back into the word bank, erasing the guessed word
+    filtered_word_bank.clear();
+    filtered_word_bank.reserve(temp.size()); // Avoid reallocation
+
+    // Use sorter for finding the top guesses
     std::priority_queue<std::pair<double, word_t>> sorter;
-    for (auto ii : filtered_word_bank)
+    for (auto ii : temp)
     {
-        double H = compute_word_entropy(ii, filtered_word_bank, available_states);
-        sorter.push({-H, ii});
+        if(ii == last_guess){
+            continue; // Do not process
+        }else{
+            // Compute entropy and sort the result
+            double H = compute_word_entropy(ii, filtered_word_bank, available_states);
+            sorter.push({-H, ii});
+            filtered_word_bank.push_back(ii);
+        }
     }
 
     // Fill up recomendations in sorted order
