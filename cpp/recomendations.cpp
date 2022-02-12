@@ -3,7 +3,8 @@
 #include <queue>
 #include <list>
 #include <math.h>
-#include <atomic>
+#include <execution>
+#include <numeric>
 
 #include "word.cpp"
 #include "word_bank.cpp"
@@ -22,7 +23,7 @@ double compute_word_entropy(
 {
 
     // This gets called by each thread
-    auto word_entropy = [word, bank](const feedback_t &other)
+    auto accumulate_entropy = [word, bank](const double &sum,const feedback_t &other)
     {
         // Generate filters according to a candidate word
         position_rule pfilt = make_position_rule(word, other);
@@ -41,18 +42,15 @@ double compute_word_entropy(
         {
             entropy = -p * log2(p);
         }
-        return entropy;
+        return sum + entropy;
     };
 
-    // Run the parallel execution
-    std::atomic<double> total(0);
-#pragma omp parallel
-    {
-        for (auto ii : states)
-        {
-            total = total + word_entropy(ii);
-        }
-    }
+    // Multi-threaded version
+    //double total = std::reduce(std::execution::par_unseq,states.begin(),states.end(),0.0,accumulate_entropy);
+
+    // Single-threaded version
+    double total = std::accumulate(states.begin(),states.end(),0.0,accumulate_entropy);
+
 
     // Final answer
     return total;
