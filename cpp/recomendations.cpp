@@ -3,6 +3,7 @@
 #include <queue>
 #include <list>
 #include <math.h>
+#include <atomic>
 
 #include "word.cpp"
 #include "word_bank.cpp"
@@ -10,8 +11,8 @@
 #include "filters.cpp"
 
 /*
-    This method is used to compute the entropy associated with a word 
-    given the available states and word bank    
+    This method is used to compute the entropy associated with a word
+    given the available states and word bank
 */
 
 double compute_word_entropy(
@@ -20,81 +21,45 @@ double compute_word_entropy(
     const set_of_feedback_arrays &states)
 {
 
-    // This object is used to collect the parallel evaluations
-    class worker
+    // This gets called by each thread
+    auto word_entropy = [word, bank](const feedback_t &other)
     {
-    public:
-        // Cache of shared variables
-        std::vector<double> results;
-        word_t word;
-        word_bank bank;
-        set_of_feedback_arrays states;
+        // Generate filters according to a candidate word
+        position_rule pfilt = make_position_rule(word, other);
+        count_rule cfilt = make_count_rule(word, other);
 
-        worker(
-            const word_t &word_,
-            const word_bank &bank_,
-            const set_of_feedback_arrays &states_)
+        // Apply filter
+        word_bank filtered = bank.matches(pfilt, cfilt);
+
+        // Size of matching state
+        double N = filtered.size();
+        // Probability
+        double p = N / bank.size();
+        // Entropy formula, handle the zero singularity
+        double entropy = 0;
+        if (N > 0)
         {
-            word = word_;
-            bank = bank_;
-            states = states_;
-            results.resize(states.size());
+            entropy = -p * log2(p);
         }
-
-        // This gets called by each thread
-        void operator()(const feedback_t &other)
-        {
-
-            // Generate filters according to a candidate word
-            position_rule pfilt = make_position_rule(word, other);
-            count_rule cfilt = make_count_rule(word, other);
-
-            // Apply filter
-            word_bank filtered = bank.matches(pfilt, cfilt);
-
-            // Size of matching state
-            double N = filtered.size();
-            // Probability
-            double p = N / bank.size();
-            // Entropy formula, handle the zero singularity
-            double entropy = 0;
-            if (N > 0)
-            {
-                entropy = -p * log2(p);
-            }
-
-            // Store result in vector (for asynchronous collection)
-            size_t index = std::distance(states.begin(), states.find(other));
-            results[index] = entropy;
-        }
+        return entropy;
     };
 
-    // Allocate memory
-    worker temp(word, bank, states);
-
-// Run the parallel execution
+    // Run the parallel execution
+    std::atomic<double> total(0);
 #pragma omp parallel
     {
         for (auto ii : states)
         {
-            temp(ii);
+            total = total + word_entropy(ii);
         }
     }
 
-    // Accumulate the parallel result after execution
-    double sum = 0;
-    for (auto ii : temp.results)
-    {
-        sum += ii;
-    }
-
     // Final answer
-    return sum;
+    return total;
 }
 
-
 /*
-    A server that makes recommendations based on maximum entropy 
+    A server that makes recommendations based on maximum entropy
 */
 
 void recommendation_generator(
@@ -115,7 +80,7 @@ void recommendation_generator(
     word_bank temp = filtered_word_bank.matches(p, c);
     // Keep the filtered word bank (deep copy)
     filtered_word_bank.resize(temp.size());
-    memcpy(filtered_word_bank.data(),temp.data(),sizeof(word_t)*temp.size());
+    memcpy(filtered_word_bank.data(), temp.data(), sizeof(word_t) * temp.size());
 
     // Compute entropy and sort the result
     std::priority_queue<std::pair<double, word_t>> sorter;
