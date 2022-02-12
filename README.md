@@ -15,4 +15,15 @@ For example, to compile into the target directory with the g++ toolchain:
 The data directory contains .txt files with lists of words in ASCII and separated by a newline.  
 Data can be added here, adjusted in the main_XXXX.cpp file, and recompiled.
 
+For reference a list of good first guess words are:
 
+Entropy: 9.6177, Word: sense
+Entropy: 9.37056, Word: seeds
+Entropy: 9.09607, Word: seems
+Entropy: 8.7247, Word: seeks
+Entropy: 8.5668, Word: stats
+Entropy: 8.53366, Word: sells
+Entropy: 8.51993, Word: tests
+Entropy: 8.07233, Word: trees
+Entropy: 8.02845, Word: ellen
+Entropy: 7.98284, Word: lease
